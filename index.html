@@ -2,117 +2,112 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Professional Voice Studio - Fixed</title>
+    <title>Voice Studio - Final Gender Fix</title>
     <style>
-        :root { --primary: #2563eb; --bg: #f8fafc; --text: #1e293b; }
-        body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); display: flex; justify-content: center; padding: 20px; }
-        .card { background: white; width: 100%; max-width: 500px; padding: 30px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.08); }
-        #display-screen { 
-            width: 100%; min-height: 80px; padding: 15px; background: #f1f5f9; 
-            border-radius: 12px; margin-bottom: 15px; font-size: 18px; line-height: 1.6;
-            border: 1px solid #e2e8f0; white-space: pre-wrap;
+        :root { --accent: #2563eb; --bg: #f1f5f9; }
+        body { font-family: 'Inter', sans-serif; background: var(--bg); display: flex; justify-content: center; padding: 20px; }
+        .card { background: white; width: 100%; max-width: 500px; padding: 30px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); }
+        #display-area { 
+            width: 100%; min-height: 100px; padding: 15px; background: #f8fafc; 
+            border: 1px solid #e2e8f0; border-radius: 12px; margin-bottom: 15px; 
+            font-size: 18px; line-height: 1.6; white-space: pre-wrap;
         }
-        .active-word { color: var(--primary); font-weight: 800; text-decoration: underline; }
-        textarea { width: 100%; height: 60px; padding: 10px; border: 1px solid #e2e8f0; border-radius: 8px; margin-bottom: 15px; resize: none; }
-        .label { display: block; font-size: 11px; font-weight: 700; text-transform: uppercase; color: #64748b; margin-bottom: 5px; }
-        
-        /* Fixed Gender Selection */
-        .gender-box { display: flex; gap: 10px; margin-bottom: 20px; }
-        .gender-btn { 
-            flex: 1; padding: 10px; border: 2px solid #e2e8f0; border-radius: 10px; 
-            cursor: pointer; background: white; font-weight: 600; transition: 0.2s;
-        }
-        .gender-btn.active { border-color: var(--primary); color: var(--primary); background: #eff6ff; }
-        
+        .active-word { color: var(--accent); font-weight: bold; text-decoration: underline; }
+        textarea { width: 100%; height: 60px; padding: 10px; border: 1px solid #ddd; border-radius: 8px; margin-bottom: 15px; }
+        .gender-nav { display: flex; gap: 10px; margin-bottom: 20px; background: #eee; padding: 5px; border-radius: 10px; }
+        .gender-nav button { flex: 1; padding: 10px; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; color: #666; transition: 0.3s; }
+        .gender-nav button.active { background: white; color: var(--accent); box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
         .controls { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-        .btn { padding: 12px; border: none; border-radius: 10px; cursor: pointer; font-weight: 700; transition: 0.2s; }
-        .btn-play { background: var(--primary); color: white; }
-        .btn-stop { background: #f1f5f9; color: #64748b; }
-        .btn-download { grid-column: span 2; background: #0f172a; color: white; margin-top: 10px; }
-        input[type="range"] { width: 100%; accent-color: var(--primary); }
+        .btn { padding: 12px; border: none; border-radius: 10px; cursor: pointer; font-weight: bold; }
+        .play { background: var(--accent); color: white; }
+        .stop { background: #64748b; color: white; }
+        .info { font-size: 11px; color: #999; margin-top: 10px; display: block; text-align: center; }
     </style>
 </head>
 <body>
 
 <div class="card">
-    <h2 style="margin:0 0 5px 0">Voice Studio</h2>
-    <p style="font-size: 13px; color: #64748b; margin-bottom: 20px;">Select a gender and press play.</p>
+    <h2 style="margin-top:0">Voice Studio</h2>
+    <textarea id="text-input" oninput="sync()">Hello Biraj, click Male or Female then press Play to hear the difference!</textarea>
+    
+    <div id="display-area"></div>
 
-    <span class="label">Input Text</span>
-    <textarea id="text-input" oninput="sync()">Hi Biraj, let's test the Male and Female voices again!</textarea>
-
-    <div id="display-screen"></div>
-
-    <div style="display: flex; gap: 20px; margin-bottom: 15px;">
-        <div style="flex: 1;">
-            <span class="label">Gender</span>
-            <div class="gender-box">
-                <button id="m-btn" class="gender-btn active" onclick="setGender('male')">Male</button>
-                <button id="f-btn" class="gender-btn" onclick="setGender('female')">Female</button>
-            </div>
-        </div>
-        <div style="flex: 1;">
-            <span class="label">Speed</span>
-            <input type="range" id="speed" min="0.5" max="2" value="1" step="0.1">
-        </div>
+    <div class="gender-nav">
+        <button id="m-btn" class="active" onclick="toggle('male')">Male Voice</button>
+        <button id="f-btn" onclick="toggle('female')">Female Voice</button>
     </div>
 
     <div class="controls">
-        <button class="btn btn-play" onclick="play()">▶ Play</button>
-        <button class="btn btn-stop" onclick="stop()">Stop</button>
-        <button class="btn btn-download" onclick="download()">Download Audio</button>
+        <button class="btn play" onclick="speak()">▶ Play</button>
+        <button class="btn stop" onclick="stop()">Stop</button>
     </div>
+    
+    <span class="info">Current Voice: <b id="v-name">Detecting...</b></span>
 </div>
 
 <script>
     const synth = window.speechSynthesis;
-    let voices = [];
+    let maleVoices = [];
+    let femaleVoices = [];
     let selectedGender = 'male';
 
-    function loadVoices() {
-        voices = synth.getVoices();
-        console.log("Voices Loaded:", voices.length);
-    }
-    synth.onvoiceschanged = loadVoices;
-    loadVoices();
+    function sortVoices() {
+        const allVoices = synth.getVoices();
+        maleVoices = [];
+        femaleVoices = [];
 
-    function setGender(g) {
+        allVoices.forEach(v => {
+            const name = v.name.toLowerCase();
+            // Male Keywords
+            if (name.includes('male') || name.includes('david') || name.includes('mark') || name.includes('alex') || name.includes('daniel') || name.includes('google us english')) {
+                maleVoices.push(v);
+            } 
+            // Female Keywords
+            else if (name.includes('female') || name.includes('zira') || name.includes('samantha') || name.includes('victoria') || name.includes('siri') || name.includes('karen')) {
+                femaleVoices.push(v);
+            }
+        });
+        
+        // Update Label
+        document.getElementById('v-name').innerText = (selectedGender === 'male' ? maleVoices[0]?.name : femaleVoices[0]?.name) || "Default";
+    }
+
+    // Trigger sorting
+    synth.onvoiceschanged = sortVoices;
+    sortVoices();
+
+    function toggle(g) {
         selectedGender = g;
-        document.getElementById('m-btn').className = g === 'male' ? 'gender-btn active' : 'gender-btn';
-        document.getElementById('f-btn').className = g === 'female' ? 'gender-btn active' : 'gender-btn';
+        document.getElementById('m-btn').className = g === 'male' ? 'active' : '';
+        document.getElementById('f-btn').className = g === 'female' ? 'active' : '';
+        
+        // Show user which voice is loaded for that gender
+        const currentList = g === 'male' ? maleVoices : femaleVoices;
+        document.getElementById('v-name').innerText = currentList[0]?.name || "Not Found (Using Default)";
     }
 
-    function sync() { document.getElementById('display-screen').innerText = document.getElementById('text-input').value; }
+    function sync() { document.getElementById('display-area').innerText = document.getElementById('text-input').value; }
     sync();
 
-    function play() {
+    function speak() {
         const text = document.getElementById('text-input').value;
-        if (!text) return;
-        synth.cancel();
+        synth.cancel(); // Force Reset
 
         const utter = new SpeechSynthesisUtterance(text);
         
-        // BETTER VOICE FILTERING LOGIC
-        const femaleNames = ['female', 'zira', 'samantha', 'victoria', 'google uk english female', 'siri', 'karen', 'moira'];
-        const maleNames = ['male', 'david', 'mark', 'alex', 'google us english', 'google uk english male', 'daniel'];
-
-        let targetVoice = voices.find(v => {
-            const name = v.name.toLowerCase();
-            const searchList = (selectedGender === 'female') ? femaleNames : maleNames;
-            return searchList.some(keyword => name.includes(keyword));
-        });
-
-        // Fallback: If no gender-specific voice found, just pick the first available one
-        utter.voice = targetVoice || voices[0];
-        utter.rate = document.getElementById('speed').value;
+        // HARD FORCE GENDER
+        if (selectedGender === 'male' && maleVoices.length > 0) {
+            utter.voice = maleVoices[0];
+        } else if (selectedGender === 'female' && femaleVoices.length > 0) {
+            utter.voice = femaleVoices[0];
+        }
 
         utter.onboundary = (event) => {
             if (event.name === 'word') {
-                const part1 = text.substring(0, event.charIndex);
+                const p1 = text.substring(0, event.charIndex);
                 const word = text.substring(event.charIndex, event.charIndex + event.charLength);
-                const part2 = text.substring(event.charIndex + event.charLength);
-                document.getElementById('display-screen').innerHTML = `${part1}<span class="active-word">${word}</span>${part2}`;
+                const p2 = text.substring(event.charIndex + event.charLength);
+                document.getElementById('display-area').innerHTML = `${p1}<span class="active-word">${word}</span>${p2}`;
             }
         };
 
@@ -121,12 +116,6 @@
     }
 
     function stop() { synth.cancel(); sync(); }
-
-    function download() {
-        const text = document.getElementById('text-input').value;
-        const url = `https://translate.google.com/translate_tts?ie=UTF-8&q=${encodeURIComponent(text)}&tl=en&client=tw-ob`;
-        window.open(url, '_blank');
-    }
 </script>
 
 </body>
